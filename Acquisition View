@@ -1,0 +1,50 @@
+WITH gaall_table as (
+SELECT parse_date('%Y%m%d',date) as date,
+geoNetwork.country as country,
+SUM(totals.visits) as sessions,
+SUM(totals.pageviews) as pageviews,
+SUM(totals.bounces) as bounces,
+SUM(totals.timeOnSite) as timeOnSite,
+SUM(totals.transactions) as transactions,
+(SUM(totals.totalTransactionRevenue))/100000 as revenue,
+device.deviceCategory as device,
+trafficSource.medium as medium, 
+trafficSource.source as source,
+channelGrouping as channel
+
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`
+
+WHERE NOT geoNetwork.country = '(not set)'
+
+GROUP BY 1,2,9,10,11,12
+
+ORDER BY 1,2)
+
+SELECT 
+gaall_table.*,
+(CASE
+  WHEN ( gaall_table.medium LIKE '%aff%' OR gaall_table.medium LIKE '%partn%' OR gaall_table.medium LIKE '%sea%' OR gaall_table.medium LIKE '%paid%' OR gaall_table.medium LIKE '%cpa%' OR gaall_table.medium LIKE '%google_shopping%' OR gaall_table.medium LIKE '%retargeting%' OR gaall_table.medium LIKE '%cpc%' ) THEN 'Paid'
+  WHEN ( gaall_table.medium LIKE '%referral%'
+  OR gaall_table.medium LIKE '%Referral%' ) THEN 'Referral'
+  WHEN ( gaall_table.medium LIKE '%display%' OR gaall_table.medium LIKE '%Display%' ) THEN 'Display'
+  WHEN ( gaall_table.medium LIKE '%social%'
+  OR gaall_table.medium LIKE '%Social%'
+  OR gaall_table.medium LIKE '%facebook%'
+  OR gaall_table.medium LIKE '%Facebook%'
+  OR gaall_table.medium LIKE '%orga%'
+  OR gaall_table.medium LIKE '%Orga%' ) THEN 'SEO & Social'
+  WHEN gaall_table.medium LIKE '%none%' THEN 'Direct'
+  WHEN ( gaall_table.medium LIKE '%crm%'
+  OR gaall_table.medium LIKE '%mail%'
+  OR gaall_table.medium LIKE '%sms%'
+  OR gaall_table.medium LIKE '%push%'
+  OR gaall_table.medium LIKE '%loyal%'
+  OR gaall_table.medium LIKE '%chatbot%'
+  OR gaall_table.medium LIKE '%welcome%'
+  OR gaall_table.medium LIKE '%birthday%' ) THEN 'CRM'
+  ELSE
+  'Others'
+  END
+    ) as company_channel
+
+FROM gaall_table
