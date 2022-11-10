@@ -1,0 +1,13 @@
+SELECT 
+parse_date('%Y%m%d', date) as date,
+geoNetwork.country as countries,
+MAX(IF(hits.page.searchKeyword IS NOT NULL,1,0)) as hasSearched,
+COUNT(distinct(CONCAT(visitId,clientId))) as sessions,
+COUNT(hits.page.searchKeyword) as numberOfSearchPageviews
+
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`,
+UNNEST(hits) as hits
+
+WHERE totals.visits = 1
+
+GROUP BY 1,2
