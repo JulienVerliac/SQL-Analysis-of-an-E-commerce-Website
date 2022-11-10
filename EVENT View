@@ -1,0 +1,23 @@
+SELECT
+CONCAT(fullVisitorId, CAST(visitId as STRING), date) as sessionID,
+parse_date('%Y%m%d',date) as date,
+geoNetwork.country as country ,
+hits.eventinfo.eventcategory,
+hits.eventinfo.eventaction,
+hits.eventinfo.eventlabel,
+COUNT(*) as total_events,
+COUNT(distinct CONCAT(CAST(fullVisitorId as STRING), CAST(visitId as STRING))) as unique_events,
+SUM(hits.eventinfo.eventvalue) as event_value,
+SUM(hits.eventinfo.eventvalue) / COUNT(*) as avg_value,
+COUNT(distinct CASE WHEN hits.type = 'EVENT' THEN CONCAT(CAST(fullVisitorId as STRING), CAST(visitId as STRING)) ELSE NULL END) as sessions_with_events,
+device.deviceCategory as device,
+channelGrouping as channel
+
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`,
+UNNEST(hits) as hits
+
+WHERE totals.visits = 1 AND hits.type = 'EVENT'
+
+GROUP BY 1,2,3,4,5,6,12,13
+
+HAVING hits.eventinfo.eventcategory IS NOT NULL 
