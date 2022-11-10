@@ -1,0 +1,17 @@
+SELECT
+CONCAT(fullVisitorID, CAST(visitID AS STRING), date) AS sessionID,
+parse_date ('%Y%m%d', date) as date,
+geoNetwork.country as countries,
+product.productListName,
+product.v2ProductName as productName,
+MAX(if(product.isImpression, 1,0)) as product_impressions,
+MAX(if(product.isClick, 1, 0)) as product_click,
+SUM(CASE WHEN hits.eCommerceAction.action_type = "3" THEN 1 END) as addToCart
+
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`, 
+  UNNEST(hits) as hits,
+  UNNEST(hits.product) as product
+
+WHERE productListName = 'Search Results'
+
+GROUP BY 1,2,3,4,5
