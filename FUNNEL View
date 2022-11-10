@@ -1,0 +1,42 @@
+SELECT parse_date('%Y%m%d',date) as date,
+geoNetwork.country as country,
+device.deviceCategory as device,
+channelGrouping as channel,
+SUM(totals.visits) as sessions,
+SUM(totals.transactions) as transactions,
+SUM(IFNULL((
+    SELECT
+      MAX(CAST((h.eCommerceAction.action_type = '3') AS INT64))
+    FROM
+      UNNEST(hits) h), 0) * totals.visits) as sessionsWithProductAddToCart,
+SUM(IFNULL((
+    SELECT 
+      MAX(CAST((h.eCommerceAction.action_type = '5') AS INT64))
+    FROM
+      UNNEST(hits) h), 0) * totals.visits) as sessionsWithCheckout,
+SUM(IFNULL((
+    SELECT 
+      MAX(CAST((h.eCommerceAction.step = 2) AS INT64))
+    FROM
+      UNNEST(hits) h), 0) * totals.visits) as sessionsWithDelivery,
+SUM(IFNULL((
+    SELECT 
+      MAX(CAST((h.eCommerceAction.step = 3) AS INT64))
+    FROM
+      UNNEST(hits) h), 0) * totals.visits) as sessionsWithPayment,
+SUM(IFNULL((
+    SELECT 
+      MAX(CAST((h.eCommerceAction.action_type = '6') AS INT64))
+    FROM
+      UNNEST(hits) h), 0) * totals.visits) as sessionsWithTransaction,
+SUM(totals.totalTransactionRevenue)/100000 as revenue
+
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`
+
+WHERE NOT geoNetwork.country = '(not set)'
+
+GROUP BY 1,2,3,4
+
+HAVING sessionsWithProductAddToCart > 0
+
+ORDER BY 1,2
