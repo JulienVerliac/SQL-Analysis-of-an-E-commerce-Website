@@ -1,0 +1,20 @@
+SELECT parse_date('%Y%m%d',date) as date,
+geoNetwork.country as country,
+device.deviceCategory as device,
+product.productSku as productId,
+product.productPrice as productPrice,
+product.v2ProductCategory as productCategory,
+channelGrouping as channel,
+SUM(totals.transactions) as transactions,
+SUM (CASE hits.eCommerceAction.action_type WHEN "6" THEN product.productQuantity ELSE NULL END) as productQuantity,
+COUNT(CASE product.isImpression WHEN TRUE THEN 1 ELSE NULL END) as impressions,
+COUNT(CASE product.isClick WHEN TRUE THEN 1 ELSE NULL END) as clicks,
+COUNT(CASE hits.eCommerceAction.action_type WHEN "3" THEN 1 ELSE NULL END) as add_to_cart,
+SUM(product.productRevenue)/100000 as productRevenue,
+
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
+UNNEST(hits) as hits,
+UNNEST(hits.product) as product 
+
+GROUP BY 
+1,2,3,4,5,6,7
