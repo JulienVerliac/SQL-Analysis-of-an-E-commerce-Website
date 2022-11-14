@@ -12,7 +12,7 @@ COUNT(CASE product.isClick WHEN TRUE THEN 1 ELSE NULL END) as clicks,
 COUNT(CASE hits.eCommerceAction.action_type WHEN "3" THEN 1 ELSE NULL END) as add_to_cart,
 SUM(product.productRevenue)/100000 as productRevenue,
 
-FROM `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
+FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`,
 UNNEST(hits) as hits,
 UNNEST(hits.product) as product 
 
