@@ -3,4 +3,4 @@ SQL Codes made on Bigquery for my Data Analysis Project showing what I did and l
 
 Medium article : 
 
-Tableau Public Profile :
+Tableau Public Profile : https://public.tableau.com/app/profile/julien1793
